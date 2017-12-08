@@ -1,4 +1,4 @@
-#include "lib_tritset.h"
+#include "lib_tritset.hpp"
 
 namespace trits {
 
