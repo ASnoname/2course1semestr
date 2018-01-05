@@ -1,0 +1,57 @@
+1. Open file and read field
+
+(full name)   --input <input file> 
+(short name)  -if     <input file> 
+
+		format <input file> == <string>
+
+
+2. Open file and write field
+
+(full name)   --output <output file> 
+(short name)  -o       <output file>
+
+		format <output file> == <string>
+
+
+3. Count iterations for field
+
+(full name)   --iterations <iteration count> 
+(short name)  -ic          <iteration count>
+
+		format <iteration count> == <int>
+
+
+4. Sizing field
+
+(full name)   --field <x> <y>
+(short name)  -f      <x> <y>
+
+		format <x> <y> == <int> <int> 
+
+
+5. Help
+
+(full name)   --help 
+(short name)  -h
+
+
+6. Rule M
+
+	-m <m>
+
+	format <m> == <int> 
+
+
+7. Rule N
+
+	-n <n>
+
+	format <n> == <int> 
+
+
+8. Rule K
+
+	-k <k>
+
+	format <k> == <int>
