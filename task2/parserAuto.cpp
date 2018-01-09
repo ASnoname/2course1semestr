@@ -2,44 +2,43 @@
 
 using namespace life;
 
-	AutoMode::AutoMode(char* flagsAndArguments[], int argc){
+	AutoMode::AutoMode(char** flagsAndArguments, int argc){
 
 		int counterWords = 1;
 
-		while(counterWords < argc){
-//reinterpret_cast<std::string>(flagsAndArguments[counterWords])
+		while(1){
+
 			if(std::string(flagsAndArguments[counterWords]) == "--input" || std::string(flagsAndArguments[counterWords]) == "-if") 
 				counterWords = flagInput(counterWords, flagsAndArguments, argc);
-			if(counterWords < 1) break;
+			if((counterWords == -1) || (counterWords == argc)) break;
 
 			if(std::string(flagsAndArguments[counterWords]) == "--output" || std::string(flagsAndArguments[counterWords]) == "-o") 
 				counterWords = flagOutput(counterWords, flagsAndArguments, argc);
-			if(counterWords < 1) break;
+			if((counterWords == -1) || (counterWords == argc)) break;
 
 			if(std::string(flagsAndArguments[counterWords]) == "--iterations" || std::string(flagsAndArguments[counterWords]) == "-ic") 
 				counterWords = flagIterations(counterWords, flagsAndArguments, argc);
-			if(counterWords < 1) break;
+			if((counterWords == -1) || (counterWords == argc)) break;
 
 			if(std::string(flagsAndArguments[counterWords]) == "--field" || std::string(flagsAndArguments[counterWords]) == "-f") 
 				counterWords = flagField(counterWords, flagsAndArguments, argc);
-			if(counterWords < 1) break;
+			if((counterWords == -1) || (counterWords == argc)) break;
 
 			if(std::string(flagsAndArguments[counterWords]) == "--help" || std::string(flagsAndArguments[counterWords]) == "-h") 
-				std::cout << 'r';
-				counterWords = flagHelp(counterWords, flagsAndArguments, argc);
-			if(counterWords < 1) break;
+				counterWords = flagHelp(counterWords, flagsAndArguments, argc); 
+			if((counterWords == -1) || (counterWords == argc)) break;
 
 			if(std::string(flagsAndArguments[counterWords]) == "-m") 
 				counterWords = flagM(counterWords, flagsAndArguments, argc);
-			if(counterWords < 1) break;
+			if((counterWords == -1) || (counterWords == argc)) break;
 
 			if(std::string(flagsAndArguments[counterWords]) == "-n") 
 				counterWords = flagN(counterWords, flagsAndArguments, argc);
-			if(counterWords < 1) break;
+			if((counterWords == -1) || (counterWords == argc)) break;
 
 			if(std::string(flagsAndArguments[counterWords]) == "-k") 
 				counterWords = flagK(counterWords, flagsAndArguments, argc);
-			if(counterWords < 1) break;
+			if((counterWords == -1) || (counterWords == argc)) break;
 
 				if (counterWords == 1)
 				{
@@ -49,7 +48,7 @@ using namespace life;
 				}
 		}
 
-		if (counterWords < 1){
+		if (counterWords == -1){
 			std::cout << "Error parsing";
 			var_validAuto = -1;
 		}
@@ -79,6 +78,12 @@ using namespace life;
 
 
 	int AutoMode::flagInput(int counterWords, char* flagsAndArguments[], int argc){
+
+		if (counterWords+2 != argc)
+		{
+			std::cout << "Expected flag <string>, but failed to parse.\n";
+			return -1;
+		}
 
 		counterWords++;
 
@@ -167,14 +172,18 @@ using namespace life;
 			// конец SET 			
 		}	
 
-		input.close(); //правильно ли я закрываю?
+		input.close();
 
-		if (counterWords < argc)
-			return counterWords++;
-		else return counterWords;
+		return ++counterWords;
 	}
 	
 	int AutoMode::flagOutput(int counterWords, char* flagsAndArguments[], int argc){
+
+		if (counterWords+2 != argc)
+		{
+			std::cout << "Expected flag <string>, but failed to parse.\n";
+			return -1;
+		}
 
 		counterWords++;
 
@@ -184,15 +193,19 @@ using namespace life;
 			return -1;
 		}
 
-		output.close(); //правильно ли я закрываю файл?
+		output.close();
 
-		if (counterWords < argc)
-			return counterWords++;
-		else return counterWords;
+		return ++counterWords;
 	}
 
 	int AutoMode::flagIterations(int counterWords, char* flagsAndArguments[], int argc){
 
+		if (counterWords+2 != argc)
+		{
+			std::cout << "Expected flag <int>, but failed to parse.\n";
+			return -1;
+		}
+
 		counterWords++;
 
 		try{
@@ -202,19 +215,14 @@ using namespace life;
 			return -1;
 		}
 
-		if (counterWords < argc)
-			return counterWords++;
-		else return counterWords;
+		return ++counterWords;
 	}
 
 	int AutoMode::flagField(int counterWords, char* flagsAndArguments[], int argc){
 
-		counterWords++;
-
-		try{
-			stoi(std::string(flagsAndArguments[counterWords]));
-		}catch(std::invalid_argument){
-			std::cout << "Expected flag <int>, but failed to parse.\n";
+		if (counterWords+3 != argc)
+		{
+			std::cout << "Expected flag <int> <int>, but failed to parse.\n";
 			return -1;
 		}
 
@@ -227,36 +235,50 @@ using namespace life;
 			return -1;
 		}
 
-		if (counterWords < argc)
-			return counterWords++;
-		else return counterWords;
+		counterWords++;
+
+		try{
+			stoi(std::string(flagsAndArguments[counterWords]));
+		}catch(std::invalid_argument){
+			std::cout << "Expected flag <int>, but failed to parse.\n";
+			return -1;
+		}
+
+		return ++counterWords;
 	}
 
 	void localHelp(int begin, int end){
 
 		std::fstream input ("help",std::ios::in);
 		std::string currentLine;
-		int i = 0;
+		int i = 1;
 			
-		while (getline(input, currentLine) && (begin > i)) 
+		while (begin > i){
+			getline(input, currentLine);
 			i++;
-
-		while (getline(input, currentLine) && (i < end)){
-
-			i++;
-			std::cout << currentLine;
 		}
+
+		while (i <= end){
+			getline(input, currentLine);
+			i++;
+			std::cout << currentLine << "\n";
+		}
+
+		input.close();
 	}
 
-	int AutoMode::flagHelp(int counterWords, char* flagsAndArguments[], int argc){
+	int AutoMode::flagHelp(int counterWords, char** flagsAndArguments, int argc){
 
-		counterWords++;
+		if (counterWords+1 == argc){
+			localHelp(1, 57);
 
-		if (counterWords > argc)
-			localHelp(0, 57);
+			return ++counterWords;
+		}
+
+		++counterWords;
 
 		if(std::string(flagsAndArguments[counterWords]) == "--input" || std::string(flagsAndArguments[counterWords]) == "-if") 
-			localHelp(0, 7);
+			localHelp(1, 7);
 
 		if(std::string(flagsAndArguments[counterWords]) == "--output" || std::string(flagsAndArguments[counterWords]) == "-o") 
 			localHelp(8, 15);
@@ -279,13 +301,17 @@ using namespace life;
 		if(std::string(flagsAndArguments[counterWords]) == "-k") 
 			localHelp(51, 57);
 
-		if (counterWords < argc)
-			return counterWords++;
-		else return counterWords;
+		return ++counterWords;
 	}
 
 	int AutoMode::flagM(int counterWords, char* flagsAndArguments[], int argc){
 
+		if (counterWords+2 != argc)
+		{
+			std::cout << "Expected flag <int>, but failed to parse.\n";
+			return -1;
+		}
+
 		counterWords++;
 
 		try{
@@ -295,13 +321,17 @@ using namespace life;
 			return -1;
 		}
 
-		if (counterWords < argc)
-			return counterWords++;
-		else return counterWords;		
+		return ++counterWords;	
 	}
 
 	int AutoMode::flagN(int counterWords, char* flagsAndArguments[], int argc){
 
+		if (counterWords+2 != argc)
+		{
+			std::cout << "Expected flag <int>, but failed to parse.\n";
+			return -1;
+		}
+
 		counterWords++;
 
 		try{
@@ -311,13 +341,17 @@ using namespace life;
 			return -1;
 		}
 
-		if (counterWords < argc)
-			return counterWords++;
-		else return counterWords;	
+		return ++counterWords;
 	}
 
 	int AutoMode::flagK(int counterWords, char* flagsAndArguments[], int argc){
 
+		if (counterWords+2 != argc)
+		{
+			std::cout << "Expected flag <int>, but failed to parse.\n";
+			return -1;
+		}
+
 		counterWords++;
 
 		try{
@@ -327,7 +361,5 @@ using namespace life;
 			return -1;
 		}
 
-		if (counterWords < argc)
-			return counterWords++;
-		else return counterWords;
+		return ++counterWords;
 	}					
