@@ -10,29 +10,31 @@ using namespace life;
 
 		if (indexCMD != -1){
 
-			if (currentCMD.find("reset",indexCMD+1) != -1)
+			if (currentCMD.find("reset",indexCMD+3) != -1)
 				return -1;
 
-			if (currentCMD.find("set",indexCMD+1) != -1)
+			if (currentCMD.find("set",indexCMD+3) != -1)
 				return -1;
 
-			if (currentCMD.find("clear",indexCMD+1) != -1)
+			if (currentCMD.find("clear",indexCMD+3) != -1)
 				return -1;
 				
-			if (currentCMD.find("step",indexCMD+1) != -1)
+			if (currentCMD.find("step",indexCMD+3) != -1)
 				return -1;
 				
-			if (currentCMD.find("back",indexCMD+1) != -1)
+			if (currentCMD.find("back",indexCMD+3) != -1)
 				return -1;
 
-			if (currentCMD.find("save",indexCMD+1) != -1)
+			if (currentCMD.find("save",indexCMD+3) != -1)
 				return -1;
 
-			if (currentCMD.find("load",indexCMD+1) != -1)
+			if (currentCMD.find("load",indexCMD+3) != -1)
 				return -1;
 
-			if (currentCMD.find("rules",indexCMD+1) != -1)
-				return -1;							
+			if (currentCMD.find("rules",indexCMD+3) != -1)
+				return -1;		
+
+			return 0;						
 		}
 
 		return 0;
@@ -42,84 +44,47 @@ using namespace life;
 
 		int temp = 0;
 
-		if (counterCommandInCurrentLine("reset",currentCMD) == -1){
-			std::cout << "Error parsing";
-			var_valid = -1; temp = 1;
-		}
-		else if (cmdReset(currentCMD) == -1){
-			std::cout << "Error parsing";
-			var_valid = -1; temp = 1;
-		}
+		while(1){
 
-		if (counterCommandInCurrentLine("set", currentCMD) == -1){
-			std::cout << "Error parsing";
-			var_valid = -1; temp = 1;
-		}
-		else if (cmdSet(currentCMD) == -1){
-			var_valid = -1; temp = 1;
-			std::cout << "Error parsing";
-		}
+			if ((counterCommandInCurrentLine("reset",currentCMD) == 0) && (cmdReset(currentCMD) == 0)){
+				var_valid = 0; temp = 1; break;
+			}
 
-		if (counterCommandInCurrentLine("clear", currentCMD) == -1){
-			var_valid = -1; temp = 1;
-			std::cout << "Error parsing";
-		}
-		else if (cmdClear(currentCMD) == -1){
-			var_valid = -1; temp = 1;
-			std::cout << "Error parsing";
-		}
+			if ((counterCommandInCurrentLine("set",currentCMD) == 0) && (cmdSet(currentCMD) == 0)){
+				var_valid = 0; temp = 1; break;
+			}
 
-		if (counterCommandInCurrentLine("step", currentCMD) == -1){
-			var_valid = -1; temp = 1;
-			std::cout << "Error parsing";
-		}
-		else if (cmdStep(currentCMD) == -1){
-			var_valid = -1; temp = 1;
-			std::cout << "Error parsing";
-		}
+			if ((counterCommandInCurrentLine("clear",currentCMD) == 0) && (cmdClear(currentCMD) == 0)){
+				var_valid = 0; temp = 1; break;
+			}		
 
-		if (counterCommandInCurrentLine("back", currentCMD) == -1){
-			var_valid = -1; temp = 1;
-			std::cout << "Error parsing";
-		}
-		else if (cmdBack(currentCMD) == -1){
-			var_valid = -1; temp = 1;
-			std::cout << "Error parsing";
-		}
+			if ((counterCommandInCurrentLine("step",currentCMD) == 0) && (cmdStep(currentCMD) == 0)){
+				var_valid = 0; temp = 1; break;
+			}
 
-		if (counterCommandInCurrentLine("save", currentCMD) == -1){
-			var_valid = -1; temp = 1;
-			std::cout << "Error parsing";
-		}
-		else if (cmdSave(currentCMD) == -1){
-			var_valid = -1; temp = 1;
-			std::cout << "Error parsing";
-		}
+			if ((counterCommandInCurrentLine("back",currentCMD) == 0) && (cmdBack(currentCMD) == 0)){
+				var_valid = 0; temp = 1; break;
+			}
 
-		if (counterCommandInCurrentLine("load", currentCMD) == -1){
-			var_valid = -1; temp = 1;
-			std::cout << "Error parsing";
-		}
-		else if (cmdLoad(currentCMD) == -1){
-			var_valid = -1; temp = 1;
-			std::cout << "Error parsing";
-		}
+			if ((counterCommandInCurrentLine("save",currentCMD) == 0) && (cmdSave(currentCMD) == 0)){
+				var_valid = 0; temp = 1; break;
+			}
 
-		if (counterCommandInCurrentLine("rules", currentCMD) == -1){
-			var_valid = -1; temp = 1;
-			std::cout << "Error parsing";
-		}
-		else if (cmdRules(currentCMD) == -1){
-			var_valid = -1; temp = 1;
-			std::cout << "Error parsing";
-		}
+			if ((counterCommandInCurrentLine("load",currentCMD) == 0) && (cmdLoad(currentCMD) == 0)){
+				var_valid = 0; temp = 1; break;
+			}
 
-		if (temp == 0){
+			if ((counterCommandInCurrentLine("rules",currentCMD) == 0) && (cmdRules(currentCMD) == 0)){
+				var_valid = 0; temp = 1; break;
+			}
 
-			std::cout << "Error parsing";
-			var_valid = -1;
-		}
-					
+			if (temp == 0){
+
+				std::cout << "Error parsing\n";
+				var_valid = -1;
+				break;
+			}
+		}						
 	}
 
 	int InteractiveMode::valid(){
@@ -136,8 +101,11 @@ using namespace life;
 
 		if (i != index)
 			return "-1";
-
-		return currentCMD.substr(index + command.length());
+// std::cout << currentCMD << "\n";
+		//currentCMD.substr(index + command.length(), currentCMD.length() - index + command.length());
+		std::string a = currentCMD.substr(index + command.length());
+// std::cout << a << "\n";
+		return a;
 	}
 
 	int InteractiveMode::cmdReset(std::string currentCMD){
@@ -155,19 +123,6 @@ using namespace life;
 		if (i != index)
 			return -1;
 		else return 0;
-	}
-
-	char** string2char(std::string str){
-
-		const char* Cstr = str.c_str();
-
-		char** arr = new char*[1];
-
-		arr[0] = new char[str.size()];
-
-		memcpy(arr[0], Cstr, str.size());
-
-		return arr;
 	}
 
 	int parsingArguments(int index, std::string currentLine){
@@ -190,7 +145,7 @@ using namespace life;
 
 		std::fstream input (firstArgument,std::ios::in);
 		if (!input){
-			std::cout << "Expected flag <string>, but failed to parse.";
+			std::cout << "Expected flag <string>, but failed to parse.\n";
 			return -1;
 		}
 
@@ -291,7 +246,7 @@ using namespace life;
 		if (i == index)
 			return -1;
 
-		std::string firstArgument;
+		std::string firstArgument = "";
 
 		while ((newLine[i] != ' ') && (i < index)){
 
@@ -304,7 +259,7 @@ using namespace life;
 			try{
 				stoi(firstArgument);
 			}catch(std::invalid_argument){
-				std::cout << "Expected argument <int>, but failed to parse.";
+				std::cout << "Expected argument <int>, but failed to parse.\n";
 				return -1;
 			}
 		}
@@ -436,7 +391,7 @@ using namespace life;
 
 		int beginIndex;
 		
-		beginIndex = forArguments(newLine, 0, "int");
+		beginIndex = forArguments(newLine, 0, "int"); 
 		if (beginIndex == -1)
 			return -1;
 
