@@ -1,236 +1,327 @@
-#include <iostream>
-#include <fstream>
 #include "lib_tritset.hpp"
-
-#define ASSERT_EQ(a,b) testObj.assert((a) == (b), #a)
-#define LOCATE(a) testObj.locate(#a)
-
-namespace trits {
-	class startTest {
-		private:
-			int all, right;
-			char *str;
-			char *loc;
-		public:
-			startTest() : all(0), right(0), str(0), loc(0) {};
-			void assert(bool rez, const char* str){
-				this->all++;
-				if(rez){
-					this->right++;
-				} else {
-					if(this->str == 0){
-						this->str = (char*)str;
-					}
-				}
-			}
-			void result(std::ostream& str){
-				if(this->all == this->right){
-					str << "[All tests passed]";
-				} else {
-					str << "[Error at '" << this->str << "' test in '" << this->loc << "' locate]";
-				}
-			}
-			void locate(const char* str){
-				if(this->str == 0)
-					this->loc = (char*)str;
-				std::cout << "\n[Testing locate '" << str << "'...]\n";
-			}
-	};
-	
-	void runMyTests(){
-		using trits::TritSet;
-		TritSet test;
-		startTest testObj;
-		
-		#define True TritSet::Trit::TRUE
-		#define False TritSet::Trit::FALSE
-		#define Unknown TritSet::Trit::UNKNOWN
-		
-		size_t tritPerUint = sizeof(unsigned int) * 4;
-		
-		// Test empty
-		LOCATE(empty);
-		test[100] = Unknown;
-		ASSERT_EQ(test[0], Unknown);
-		ASSERT_EQ(test[100], Unknown);
-		ASSERT_EQ(test.capacity(), 0);
-		
-		// Test memory
-		LOCATE(memory);
-		ASSERT_EQ(test.length(), 0);
-		test[1] = True;
-		test[2] = False;
-		ASSERT_EQ(test.capacity(), tritPerUint / 4);
-		test[tritPerUint] = test[1];
-		ASSERT_EQ(test.capacity(), 2 * tritPerUint / 4);
-		
-		// Test values
-		LOCATE(values);
-		test[5 * tritPerUint + 1] = False;
-		test[3 * tritPerUint + 2] = True;
-		ASSERT_EQ(test[0], Unknown);
-		ASSERT_EQ(test[1], True);
-		ASSERT_EQ(test[2], False);
-		ASSERT_EQ(test[3 * tritPerUint + 2], True);
-		ASSERT_EQ(test[5 * tritPerUint + 1], False);
-		ASSERT_EQ(test[tritPerUint], True);
-		ASSERT_EQ(test[1000000], Unknown);
-		ASSERT_EQ(test[5], Unknown);
-		ASSERT_EQ(test.capacity(), 6 * tritPerUint / 4);
-		
-		// Test shrink()
-		LOCATE(shrink);
-		size_t size = test.capacity();
-		test[1000000] = True;
-		test[1000000] = Unknown;
-		test.shrink();
-		ASSERT_EQ(test.capacity(), size);
-		
-		// Test length()
-		LOCATE(length);
-		ASSERT_EQ(test.length(), 5 * tritPerUint + 2);
-		size = test.length();
-		test[100] = True;
-		test[100] = Unknown;
-		ASSERT_EQ(test.length(), size);
-		
-		// Test copy constructor
-		LOCATE(copy);
-		ASSERT_EQ(test[0], Unknown);
-		ASSERT_EQ(test[1], True);
-		ASSERT_EQ(test[2], False);
-		TritSet test2 = test;
-		ASSERT_EQ(test2[0], Unknown);
-		ASSERT_EQ(test2[1], True);
-		ASSERT_EQ(test2[2], False);
-		
-		// Test accept
-		LOCATE(accept);
-		TritSet test1(4);
-		test1 = test2;
-		ASSERT_EQ(test2[0], Unknown);
-		ASSERT_EQ(test2[1], True);
-		ASSERT_EQ(test2[2], False);
-		
-		// Test NOT
-		LOCATE(not);
-		test2 = !test2;
-		ASSERT_EQ(test2[0], Unknown);
-		ASSERT_EQ(test2[1], False);
-		ASSERT_EQ(test2[2], True);
-		
-		// Test OR
-		LOCATE(or);
-		test2[2] = False;
-		TritSet test3 = test | test2;
-		// U T F
-		// U F F
-		// U T F
-		ASSERT_EQ(test3[0], Unknown);
-		ASSERT_EQ(test3[1], True);
-		ASSERT_EQ(test3[2], False);
-		
-		// Test AND
-		LOCATE(and);
-		test3 = test & !test2;
-		// U T F
-		// U T T
-		// U T F
-		ASSERT_EQ(test3[0], Unknown);
-		ASSERT_EQ(test3[1], True);
-		ASSERT_EQ(test3[2], False);
-		
-		// Test size afte logic
-		LOCATE(capacity_logic);
-		ASSERT_EQ(test.capacity(), test3.capacity());
-		
-		// Test cardinality
-		LOCATE(cardinality);
-		ASSERT_EQ(test.cardinality(True), 3);
-		ASSERT_EQ(test.cardinality(False), 2);
-		ASSERT_EQ(test.cardinality(Unknown), test.length() - test.cardinality(True) - test.cardinality(False));
-		ASSERT_EQ(test.cardinality(True), 3);
-		ASSERT_EQ(test.cardinality(False), 2);
-		
-		// Test map
-		LOCATE(map);
-		test.shrink();
-		TritSet::TritMap map = test.cardinality();
-		ASSERT_EQ(map[True], test.cardinality(True));
-		ASSERT_EQ(map[False], test.cardinality(False));
-		ASSERT_EQ(map[Unknown], test.cardinality(Unknown));
-		size = test.cardinality(True);
-		test[1000] = True;
-		ASSERT_EQ(test.cardinality(True), size + 1);
-		test[1000] = Unknown;
-		ASSERT_EQ(test.cardinality(True), size);
-		
-		// Test trim
-		LOCATE(trim);
-		size = test.length();
-		test[size + 10] = True;
-		test[size + 15] = False;
-		test.trim(size + 12);
-		ASSERT_EQ(test[size + 10], True);
-		ASSERT_EQ(test[size + 15], Unknown);
-		ASSERT_EQ(test.length(), size + 10 + 1);
-		map = test.cardinality();
-		ASSERT_EQ(map[True], 4);
-		ASSERT_EQ(map[False], 2);
-		test.shrink();
-		
-		// Test iterator
-		LOCATE(iterator);
-		TritSet test4;
-		TritSet::Trit for_test_iterator[] = {True, False, Unknown, False, True};
-		unsigned int i;
-		for(i = 0; i < sizeof(for_test_iterator) / sizeof(unsigned int); i++)
-			test4[i] = for_test_iterator[i];
-		i = 0;
-		for(auto&& iter : test4){
-			ASSERT_EQ(iter, for_test_iterator[i]);
-			iter = Unknown;
-			i++;
-		}
-		ASSERT_EQ(test4.length(), 0);
-		
-		// Test unitar
-		LOCATE(unitar);
-		TritSet newnew;
-		newnew[5] = True;
-		newnew[6] = False;
-		newnew[7] = newnew[6] | (newnew[5] & ~newnew[6]);
-		ASSERT_EQ(newnew[7], True);
-		
-		// Stream
-		LOCATE(stream);
-		
-		std::ofstream of("test.txt");
-		newnew.saveToStream(of);
-		of.close();
-		
-		ASSERT_EQ(newnew[5], True);
-		ASSERT_EQ(newnew[6], False);
-		ASSERT_EQ(newnew[7], True);
-		
-		TritSet newnew2;
-		
-		std::ifstream iff("test.txt");
-		newnew2.loadFromStream(iff);
-		iff.close();
-		
-		ASSERT_EQ(newnew2[5], True);
-		ASSERT_EQ(newnew2[6], False);
-		ASSERT_EQ(newnew2[7], True);
-				
-		testObj.result(std::cout);
-	}
-}
+#include <fstream>
 
 using namespace trits;
 
-	int main()
-	{
-		runMyTests();
-		return 0;
+#define ASSERT_EQ(a,b) (a)==(b)
+
+bool empty(TritSet tritset){
+
+	bool result = true;
+
+	result &= ASSERT_EQ(tritset.capacity(), 0);
+	tritset[100] = Unknown;
+	result &= ASSERT_EQ(tritset[0], Unknown);
+	result &= ASSERT_EQ(tritset[100], Unknown);
+
+	return result;
+}
+
+bool shrink(TritSet tritset){
+
+	size_t size = tritset.capacity();
+	tritset[55555] = True;
+	tritset[55555] = Unknown;
+	tritset.shrink();
+	return ASSERT_EQ(tritset.capacity(), size);
+}
+
+bool memory(TritSet tritset, size_t UNINTx4){
+
+	bool result = true;
+
+	result &= ASSERT_EQ(tritset.length(), 0);
+	tritset[1] = True;
+	result &= ASSERT_EQ(tritset.capacity(), UNINTx4 / 4);
+	tritset[UNINTx4] = tritset[1];
+	result &= ASSERT_EQ(tritset.capacity(), 2 * UNINTx4 / 4);
+
+	return result;
+}
+
+bool values(TritSet tritset, size_t UNINTx4){
+
+	bool result = true;
+
+	tritset[1] = True;
+	tritset[2] = False;
+	tritset[UNINTx4] = tritset[1];	
+
+	tritset[5 * UNINTx4 + 1] = False;
+	tritset[3 * UNINTx4 + 2] = True;
+	result &= ASSERT_EQ(tritset[55555], Unknown);
+	result &= ASSERT_EQ(tritset[5], Unknown);
+	result &= ASSERT_EQ(tritset.capacity(), 6 * UNINTx4 / 4);
+	result &= ASSERT_EQ(tritset[0], Unknown);
+	result &= ASSERT_EQ(tritset[1], True); 
+	result &= ASSERT_EQ(tritset[2], False); 
+	result &= ASSERT_EQ(tritset[3 * UNINTx4 + 2], True);
+	result &= ASSERT_EQ(tritset[5 * UNINTx4 + 1], False);
+	result &= ASSERT_EQ(tritset[UNINTx4], True); 
+
+	return result;
+}
+
+bool cardinality(TritSet tritset, size_t UNINTx4){
+
+	bool result = true;
+
+	tritset[1] = True;
+	tritset[2] = False;
+	tritset[UNINTx4] = tritset[1];	
+	tritset[5 * UNINTx4 + 1] = False;
+	tritset[3 * UNINTx4 + 2] = True;
+
+	result &= ASSERT_EQ(tritset.cardinality(True), 3); 
+	result &= ASSERT_EQ(tritset.cardinality(False), 2); 
+	result &= ASSERT_EQ(tritset.cardinality(Unknown), tritset.length() - tritset.cardinality(True) - tritset.cardinality(False));
+	result &= ASSERT_EQ(tritset.cardinality(True), 3); 
+	result &= ASSERT_EQ(tritset.cardinality(False), 2); 
+
+	return result;
+}
+
+bool length(TritSet tritset, size_t UNINTx4){
+
+	bool result = true;
+	
+	tritset[5 * UNINTx4 + 1] = False;
+
+	result &= ASSERT_EQ(tritset.length(), 5 * UNINTx4 + 2);
+	size_t size = tritset.length();
+	tritset[100] = True;
+	tritset[100] = Unknown;
+	result &= ASSERT_EQ(tritset.length(), size);
+
+	return result;
+}
+
+bool copy(TritSet tritset){
+
+	bool result = true;
+
+	tritset[1] = True;
+	tritset[2] = False;
+
+	result &= ASSERT_EQ(tritset[0], Unknown);
+	result &= ASSERT_EQ(tritset[1], True); 
+	result &= ASSERT_EQ(tritset[2], False); 
+	TritSet tritset1 = tritset;
+	result &= ASSERT_EQ(tritset1[0], Unknown);
+	result &= ASSERT_EQ(tritset1[1], True); 
+	result &= ASSERT_EQ(tritset1[2], False); 
+
+	return result;
+}
+
+bool accept(TritSet tritset){
+
+	bool result = true;
+
+	tritset[1] = True;
+	tritset[2] = False;
+
+	TritSet tritset1(4);
+	tritset1 = tritset;
+	result &= ASSERT_EQ(tritset1[0], Unknown);
+	result &= ASSERT_EQ(tritset1[1], True); 
+	result &= ASSERT_EQ(tritset1[2], False);
+
+	return result;
+}
+
+bool operation_not(TritSet tritset){
+
+	bool result = true;
+
+	tritset[1] = True;
+	tritset[2] = False;
+
+	TritSet tritset1 = tritset;
+	tritset1 = !tritset1;
+	result &= ASSERT_EQ(tritset1[0], Unknown);
+	result &= ASSERT_EQ(tritset1[1], False); 
+	result &= ASSERT_EQ(tritset1[2], True); 
+
+	return result;
+}
+
+bool operation_or(TritSet tritset){
+
+	bool result = true;
+
+	tritset[1] = True;
+	tritset[2] = False;
+
+	TritSet tritset1 = tritset;
+	tritset1 = !tritset1;
+	tritset1[2] = False;
+	TritSet tritset2 = tritset | tritset1;
+	result &= ASSERT_EQ(tritset2[0], Unknown);
+	result &= ASSERT_EQ(tritset2[1], True); 
+	result &= ASSERT_EQ(tritset2[2], False); 
+
+	return result;
+}
+
+bool operation_and(TritSet tritset){
+
+	bool result = true;
+
+	tritset[1] = True;
+	tritset[2] = False;
+
+	TritSet tritset1 = tritset;
+	tritset1 = !tritset1;
+	tritset1[2] = False;
+	TritSet tritset2 = tritset & !tritset1;
+	result &= ASSERT_EQ(tritset2[0], Unknown);
+	result &= ASSERT_EQ(tritset2[1], True); 
+	result &= ASSERT_EQ(tritset2[2], False); 
+
+	return result;
+}
+
+bool capacity_logic(TritSet tritset){
+
+	tritset[2] = False;
+
+	TritSet tritset1 = tritset;
+	tritset1 = !tritset1;
+	tritset1[2] = False;
+	TritSet tritset2 = tritset & !tritset1;
+
+	return ASSERT_EQ(tritset.capacity(), tritset2.capacity()); 
+}
+
+bool map(TritSet tritset){
+
+	bool result = true;
+
+	TritSet::TritMap map = tritset.cardinality();
+	result &= ASSERT_EQ(map[True], tritset.cardinality(True));
+	result &= ASSERT_EQ(map[False], tritset.cardinality(False));
+	result &= ASSERT_EQ(map[Unknown], tritset.cardinality(Unknown));
+	size_t size = tritset.cardinality(True);
+	tritset[1000] = True;
+	result &= ASSERT_EQ(tritset.cardinality(True), size + 1);
+	tritset[1000] = Unknown;
+	result &= ASSERT_EQ(tritset.cardinality(True), size);	
+
+	return result;
+}
+
+bool trim(TritSet tritset, size_t UNINTx4){
+
+	bool result = true;
+
+	tritset[1] = True;
+	tritset[2] = False;
+	tritset[UNINTx4] = tritset[1];	
+	tritset[5 * UNINTx4 + 1] = False;
+	tritset[3 * UNINTx4 + 2] = True;
+
+	size_t size = tritset.length();
+	tritset[1000] = Unknown;
+	tritset[size + 10] = True;
+	tritset[size + 15] = False;
+	tritset.trim(size + 12);
+	result &= ASSERT_EQ(tritset[size + 10], True);
+	result &= ASSERT_EQ(tritset[size + 15], Unknown);
+	result &= ASSERT_EQ(tritset.length(), size + 10 + 1);
+	TritSet::TritMap map = tritset.cardinality();
+
+	result &= ASSERT_EQ(map[True], 4); 
+	result &= ASSERT_EQ(map[False], 2); 
+
+	return result;
+}
+
+bool iterator(){
+
+	bool result = true;
+
+	TritSet tritset;
+	TritSet::Trit trit[] = {True, False, Unknown, False, True};
+
+	unsigned int i;
+	for(i = 0; i < sizeof(trit) / sizeof(unsigned int); i++)
+		tritset[i] = trit[i];
+
+	i = 0;
+	for(auto&& it : tritset){
+		result &= ASSERT_EQ(it, trit[i]);
+		it = Unknown;
+		i++;
 	}
+
+	result &= ASSERT_EQ(tritset.length(), 0);
+
+	return result;
+}
+
+bool unitar(){
+
+	TritSet tritset;
+	tritset[5] = True;
+	tritset[6] = False;
+	tritset[7] = tritset[6] | (tritset[5] & ~tritset[6]);
+	return ASSERT_EQ(tritset[7], True);
+}
+
+bool stream(){
+
+	bool result = true;
+
+	TritSet tritset;
+
+	tritset[5] = True;
+	tritset[6] = False;
+	tritset[7] = tritset[6] | (tritset[5] & ~tritset[6]);
+
+	std::ofstream of("test");
+	tritset.saveToStream(of);
+	of.close();
+		
+	result &= ASSERT_EQ(tritset[5], True);
+	result &= ASSERT_EQ(tritset[6], False);
+	result &= ASSERT_EQ(tritset[7], True);
+		
+	TritSet tritset1;
+		
+	std::ifstream iff("test");
+	tritset1.loadFromStream(iff);
+	iff.close();
+		
+	result &= ASSERT_EQ(tritset1[5], True);
+	result &= ASSERT_EQ(tritset1[6], False);
+	result &= ASSERT_EQ(tritset1[7], True);
+
+	return result;
+}
+
+int main()
+{
+	TritSet tritset;
+	size_t UNINTx4 = sizeof(unsigned int) * 4;
+
+	if(empty(tritset)) std::cout << "Correct empty\n";
+	if(shrink(tritset)) std::cout << "Correct shrink\n";
+	if(memory(tritset, UNINTx4)) std::cout << "Correct memory\n";
+	if(values(tritset, UNINTx4)) std::cout << "Correct values\n";
+	if(cardinality(tritset,UNINTx4)) std::cout << "Correct cardinality\n";
+	if(length(tritset, UNINTx4)) std::cout << "Correct length\n";
+	if(copy(tritset)) std::cout << "Correct copy\n";
+	if(accept(tritset)) std::cout << "Correct accept\n";
+	if(operation_not(tritset)) std::cout << "Correct operation_not\n";
+	if(operation_or(tritset)) std::cout << "Correct operation_or\n";
+	if(operation_and(tritset)) std::cout << "Correct operation_and\n";
+	if(capacity_logic(tritset)) std::cout << "Correct capacity_logic\n";
+	if(map(tritset)) std::cout << "Correct map\n";
+	if(trim(tritset, UNINTx4)) std::cout << "Correct trim\n";
+	if(iterator()) std::cout << "Correct iterator\n";
+	if(unitar()) std::cout << "Correct unitar\n";
+	if(stream()) std::cout << "Correct stream\n";
+
+	return 0;
+}
