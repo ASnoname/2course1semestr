@@ -6,18 +6,36 @@ using namespace life;
 
 int main(int argc, char** argv)
 {
-std::cout << "fffffff";
+
+	std::string in;
+
 	if (argc > 1){
 		
 	 	AutoMode hello(argv,argc);
-		//  if (hello.validAuto() == -1)
-		// 	return 0;
 
+		if (!hello.is_valid())
+		 	return 0;
 
+		if ((std::string(argv[0]) == "--help") || (std::string(argv[0]) == "-h"))
+			return 0;
+
+		Game inGame(argv,argc);
 	}
+	else {
 
+		Game inGame;
 
+		while(true){
+
+			getline(std::cin, in);
+			if(in == "exit") break;
+			InteractiveMode hello2(in);
+			if (hello2.is_valid())
+			 	return 0;
+
+			inGame.newCommand(in);
+		}	 
+	}
 
 	return 0;
 }
-
