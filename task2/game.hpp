@@ -1,34 +1,40 @@
-#ifndef LIFE3
-#define LIFE3
+#ifndef LIFE4
+#define LIFE4
 
-#include <vector>
+#include <deque>
+#include <fstream>
+#include <string>
+#include "field.hpp"
+#include <iostream>
 
 namespace life{
 
-	class Life{
+	class Game{
 
-	public:
+		public:
+		
+			Game();
+			Game(char**,int); 
+			void newCommand(std::string);
 
-		Life();
-		Life(unsigned int,unsigned int);
+		private:
 
-		void M(int);
-		void N(int);
-		void K(int);
+			std::deque<Field> queue; 
 
-	private:	
+			unsigned int m;
+			unsigned int n;
+			unsigned int k;
 
-		void field(unsigned int,unsigned int);
+			unsigned int countIteration;
 
-		std::vector<char> array;
-
-		int m;
-		int n;
-		int k;
-		unsigned int x;
-		unsigned int y;
+			void step(unsigned int);
+			void back();
+			void save(std::string);
+			bool load(std::string);
+			void solver(int,int);
+			void show();
 	};
 
-};
+}	
 
 #endif 
