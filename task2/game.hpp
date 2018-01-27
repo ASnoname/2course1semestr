@@ -14,23 +14,23 @@ namespace life{
 		public:
 		
 			Game();
-			Game(char**,int); 
+			Game(std::string); 
 			void newCommand(std::string);
 
 		private:
 
 			std::deque<Field> queue; 
 
-			unsigned int m;
-			unsigned int n;
-			unsigned int k;
+			int m;
+			int n;
+			int k;
 
-			unsigned int countIteration;
+			int countIteration;
 
 			void step(unsigned int);
 			void back();
 			void save(std::string);
-			bool load(std::string);
+			void load(std::string);
 			void solver(int,int);
 			void show();
 	};
