@@ -13,7 +13,7 @@ namespace life{
 		public:
 
 			AutoMode(char**, int);
-			int validAuto();
+			bool is_valid();
 			
 		private: 
 
@@ -26,7 +26,7 @@ namespace life{
 			int flagN(int, char**, int);
 			int flagK(int, char**, int);
 
-			int var_validAuto;
+			bool var_valid;
 	};
 };	
 
