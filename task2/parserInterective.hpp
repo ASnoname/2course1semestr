@@ -13,7 +13,7 @@ namespace life {
 		public:
 
 			InteractiveMode(std::string);
-			int valid();
+			bool is_valid();
 
 		private:
 
@@ -26,7 +26,7 @@ namespace life {
 			int cmdLoad(std::string);
 			int cmdRules(std::string);
 
-			int var_valid;
+			bool var_valid;
 	};
 	
 };	
