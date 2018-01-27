@@ -7,13 +7,11 @@ using namespace life;
 		queue.emplace_back();
 	}
 
-	bool Game::load(std::string namefile){
+	void Game::load(std::string namefile){
 
-		std::fstream input(namefile);
+		std::fstream input(namefile, std::ios::in);
 
-		int indexFIELD = -1;
-		int indexRULES = -1;
-		int indexSET = -1;
+		int index = -1;
 
 		std::string x_file;
 		std::string y_file;
@@ -24,58 +22,58 @@ using namespace life;
 
 		std::string currentLine;
 
-		while(getline(input, currentLine,'#')){
+		while(getline(input, currentLine,'\n')){
 
-			indexFIELD = currentLine.find("FIELD",0);
-			if (indexFIELD != -1){
-				indexFIELD += strlen("FIELD");
+			index = currentLine.find("FIELD",0);
+			if (index != -1){
+				index += strlen("FIELD");
 
-				while(currentLine[indexFIELD] == ' ') indexFIELD++;
+				while(currentLine[index] == ' ') index++;
 
-				while(currentLine[indexFIELD] != ' '){
+				while(currentLine[index] != ' '){
 
-					x_file += currentLine[indexFIELD];
-					indexFIELD++;
+					x_file += currentLine[index];
+					index++;
 				}
 
-				while(currentLine[indexFIELD] == ' ') indexFIELD++;
+				while(currentLine[index] == ' ') index++;
 
-				while((currentLine[indexFIELD] != ' ') && (currentLine[indexFIELD] != '#') && (currentLine[indexFIELD] != '\n')){
+				while((currentLine[index] != ' ') && (currentLine[index] != '#') && (currentLine[index] != '\n')){
 
-					x_file += currentLine[indexFIELD];
-					indexFIELD++;
+					x_file += currentLine[index];
+					index++;
 				}
 
-				queue[0].x_ = stoi(x_file); 
-				queue[0].y_ = stoi(y_file);
+				(queue.end()-1)->x_ = stoi(x_file); 
+				(queue.end()-1)->y_ = stoi(y_file);
 			}
 
-			indexRULES = currentLine.find("RULES",0);
-			if (indexRULES != -1){
-				indexRULES += strlen("RULES");
+			index = currentLine.find("RULES",0);
+			if (index != -1){
+				index += strlen("RULES");
 
-				while(currentLine[indexRULES] == ' ') indexRULES++;
+				while(currentLine[index] == ' ') index++;
 
-				while(currentLine[indexRULES] != ' '){
+				while(currentLine[index] != ' '){
 
-					m_file += currentLine[indexRULES];
-					indexRULES++;
+					m_file += currentLine[index];
+					index++;
 				}
 
-				while(currentLine[indexRULES] == ' ') indexRULES++;
+				while(currentLine[index] == ' ') index++;
 
-				while(currentLine[indexRULES] != ' '){
+				while(currentLine[index] != ' '){
 
-					n_file += currentLine[indexRULES];
-					indexRULES++;
+					n_file += currentLine[index];
+					index++;
 				}
 
-				while(currentLine[indexRULES] == ' ') indexRULES++;
+				while(currentLine[index] == ' ') index++;
 
-				while((currentLine[indexRULES] != ' ') && (currentLine[indexRULES] != '#') && (currentLine[indexRULES] != '\n')){
+				while((currentLine[index] != ' ') && (currentLine[index] != '#') && (currentLine[index] != '\n')){
 
-					k_file += currentLine[indexRULES];
-					indexRULES++;
+					k_file += currentLine[index];
+					index++;
 				}
 
 				m = stoi(m_file); 
@@ -85,39 +83,46 @@ using namespace life;
 
 		}
 
-		while (getline(input, currentLine,'#')){
-			indexSET = currentLine.find("SET",0);
-			if (indexSET != -1){
-				indexSET += strlen("SET"); 
+		input.close();
+
+		std::fstream input2(namefile, std::ios::in);
+
+		while (getline(input2, currentLine,'\n')){
+
+			index = currentLine.find("SET",0);
+			if (index != -1){
+				index += strlen("SET"); 
 
 				std::string setX;		
 				std::string setY;
 
-				while(currentLine[indexSET] == ' ') indexSET++;
+				while(currentLine[index] == ' ') index++;
 
-				while(currentLine[indexSET] != ' '){
+				while(currentLine[index] != ' '){
 
-					setX += currentLine[indexSET];
-					indexSET++;
+					setX += currentLine[index];
+					index++;
 				}
 
-				while(currentLine[indexSET] == ' ') indexSET++;
+				while(currentLine[index] == ' ') index++;
 
-				while((currentLine[indexSET] != ' ') && (currentLine[indexSET] != '#') && (currentLine[indexSET] != '\n')){
+				while((currentLine[index] != ' ') && (currentLine[index] != '#') && (currentLine[index] != '\n')){
 
-					setY += currentLine[indexSET];
-					indexSET++;
+					setY += currentLine[index];
+					index++;
 				}
 
-				if ((stoi(setX) >= queue[0].x_) || (stoi(setY) >= queue[0].y_))
-					return false;
+				bool a = true;
 
-				queue[0].set(stoi(setX), stoi(setY));
-				return true;
+				if ((stoi(setX) >= (queue.end()-1)->x_) || (stoi(setY) >= (queue.end()-1)->y_))
+					a = false;
+
+				if (a)
+					(queue.end()-1)->set(stoi(setX), stoi(setY));
 			}
 		}
 
-		return true;
+		input2.close();
 	}
 
 	void Game::save(std::string namefile){
@@ -125,58 +130,126 @@ using namespace life;
 		std::fstream output (namefile,std::ios::out);
 
 		if ((m != 3) || (n != 2) || (k != 3))
-			output << "RULES " << m << " " << n << " " << k << std::endl;
+			output << "RULES " << m << " " << n << " " << k << '\n';
 
-		if (queue.end()->x_ != 10 || queue.end()->y_ != 10)
-			output << "FIELD " << queue.end()->x_ << " " << queue.end()->y_ << std::endl;
+		if ((queue.end()-1)->x_ != 10 || (queue.end()-1)->y_ != 10)
+			output << "FIELD " << (queue.end()-1)->x_ << " " << (queue.end()-1)->y_ << '\n';
 
-		for (int i = 0; i < queue.end()->y_; ++i) // i - y-ая координата
-			for (int j = 0; j < queue.end()->x_; ++j)
-				if (queue.end()->array[queue.end()->x_*i+j] == aliveCell)
-					output << "SET" << j << ' ' << i << std::endl;	
+		for (int i = 0; i < (queue.end()-1)->y_; ++i) 
+			for (int j = 0; j < (queue.end()-1)->x_; ++j)
+				if ((queue.end()-1)->array[(queue.end()-1)->x_*i+j] == aliveCell)
+					output << "SET" << ' ' << j << ' ' << i << '\n';
+		output.close();				
 	}
 
-	Game::Game(char** argv, int argc):m(3),n(2),k(3),countIteration(10){
+	std::string helperForfindcmd(std::string in, int index){
+
+		while(in[index] == ' ') index++;
+
+		std::string name;
+		while((in[index] != ' ') && (in[index] != '#') && (in[index] != '\n')){
+
+			name += in[index];
+			index++;
+		}
+		return name;
+	}
+
+	std::string findcmd(std::string in, std::string cmd){
+
+		int index = -1;
+
+		index = in.find(cmd,0);
+		if (index != -1){
+
+			index += cmd.length();
+			return helperForfindcmd(in,index);
+		}
+		return ".";
+	}
+
+	Game::Game(std::string in):m(3),n(2),k(3),countIteration(10){ 
 
 		queue.emplace_back();
 
-		unsigned int m_cmd = -1; 
-		unsigned int n_cmd = -1; 
-		unsigned int k_cmd = -1; 
-		unsigned int x_cmd = -1; 
-		unsigned int y_cmd = -1; 
-		bool error = true;
+		int m_cmd = -1; 
+		int n_cmd = -1; 
+		int k_cmd = -1; 
+		int x_cmd = -1; 
+		int y_cmd = -1; 
 
-		for (int i = 0; i < argc; ++i)
-		{
-			if ((std::string(argv[i]) == "--input") || (std::string(argv[i]) == "-if"))	
-				if(!load(std::string(argv[++i]))) { 
-					std::cout << "Error set"; 
-					error = true;
-					break;
-				}	
+		std::string smth;
+		int index;
 
-			if ((std::string(argv[i]) == "--output") || (std::string(argv[i]) == "-o"))
-				save(std::string(argv[++i]));
+		smth = findcmd(in,"--input");
+		if (smth != ".")
+			load(smth);
 
-			if ((std::string(argv[i]) == "--iterations") || (std::string(argv[i]) == "-ic"))
-				countIteration = stoi(std::string(argv[++i]));					
+		smth = findcmd(in,"-if");
+		if (smth != ".")
+			load(smth);
 
-			if ((std::string(argv[i]) == "--field") || (std::string(argv[i]) == "-f")){
+		smth = findcmd(in,"--output");
+		if (smth != ".")
+			save(smth);
 
-				x_cmd = stoi(std::string(argv[++i]));
-				y_cmd = stoi(std::string(argv[++i]));
+		smth = findcmd(in,"-o");
+		if (smth != ".")
+			save(smth);
+
+		smth = findcmd(in,"--iterations");
+		if (smth != ".")
+			countIteration = stoi(smth);
+
+		smth = findcmd(in,"-ic");
+		if (smth != ".")
+			countIteration = stoi(smth);
+
+		index = in.find("--field",0);
+		if (index != -1){
+
+			index += strlen("--field");
+
+			while(in[index] == ' ') index++;
+
+			std::string name;
+			while((in[index] != ' ') && (in[index] != '#') && (in[index] != '\n')){
+
+				name += in[index];
+				index++;
 			}
-				
-			if (std::string(argv[i]) == "-m")
-				m_cmd = stoi(std::string(argv[++i]));
+			x_cmd = stoi(name);
+			y_cmd = stoi(helperForfindcmd(in,index));
+		}	
 
-			if (std::string(argv[i]) == "-n")
-				n_cmd = stoi(std::string(argv[++i]));
+		index = in.find("-f",0);
+		if (index != -1){
 
-			if (std::string(argv[i]) == "-k")	
-				k_cmd = stoi(std::string(argv[++i]));								
-		}
+			index += strlen("-f");
+
+			while(in[index] == ' ') index++;
+
+			std::string name;
+			while((in[index] != ' ') && (in[index] != '#') && (in[index] != '\n')){
+
+				name += in[index];
+				index++;
+			}
+			x_cmd = stoi(name);
+			y_cmd = stoi(helperForfindcmd(in,index));
+		}	
+
+		smth = findcmd(in,"-m");
+		if (smth != ".")
+			m_cmd = stoi(smth);
+
+		smth = findcmd(in,"-n");
+		if (smth != ".")
+			n_cmd = stoi(smth);
+
+		smth = findcmd(in,"-k");
+		if (smth != ".")
+			k_cmd = stoi(smth);
 
 		if (m_cmd != -1)
 			m = m_cmd;
@@ -189,13 +262,12 @@ using namespace life;
 
 		if (x_cmd != -1)
 		{
-			queue[0].x_ = x_cmd;
-			queue[0].y_ = y_cmd;
+			(queue.end()-1)->x_ = x_cmd;
+			(queue.end()-1)->y_ = y_cmd;
 		}
-		if (error == true){
-			step(countIteration);
-			show();
-		}
+
+		step(countIteration);
+		show();
 	}
 
 	void Game::newCommand(std::string currentCmd){
