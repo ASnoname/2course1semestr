@@ -19,7 +19,10 @@ int main(int argc, char** argv)
 		if ((std::string(argv[0]) == "--help") || (std::string(argv[0]) == "-h"))
 			return 0;
 
-		Game inGame(argv,argc);
+		for (int i = 1; i < argc; ++i)
+			in = in + argv[i] + ' ';
+
+		Game inGame(in);
 	}
 	else {
 
@@ -30,7 +33,7 @@ int main(int argc, char** argv)
 			getline(std::cin, in);
 			if(in == "exit") break;
 			InteractiveMode hello2(in);
-			if (hello2.is_valid())
+			if (!hello2.is_valid())
 			 	return 0;
 
 			inGame.newCommand(in);
