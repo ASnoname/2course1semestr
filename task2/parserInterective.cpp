@@ -42,54 +42,51 @@ using namespace life;
 
 	InteractiveMode::InteractiveMode(std::string currentCMD){
 
-		int temp = 0;
-
 		while(1){
 
 			if ((counterCommandInCurrentLine("reset",currentCMD) == 0) && (cmdReset(currentCMD) == 0)){
-				var_valid = 0; temp = 1; break;
+				var_valid = true; break;
 			}
 
 			if ((counterCommandInCurrentLine("set",currentCMD) == 0) && (cmdSet(currentCMD) == 0)){
-				var_valid = 0; temp = 1; break;
+				var_valid = true; break;
 			}
 
 			if ((counterCommandInCurrentLine("clear",currentCMD) == 0) && (cmdClear(currentCMD) == 0)){
-				var_valid = 0; temp = 1; break;
+				var_valid = true; break;
 			}		
 
 			if ((counterCommandInCurrentLine("step",currentCMD) == 0) && (cmdStep(currentCMD) == 0)){
-				var_valid = 0; temp = 1; break;
+				var_valid = true; break;
 			}
 
 			if ((counterCommandInCurrentLine("back",currentCMD) == 0) && (cmdBack(currentCMD) == 0)){
-				var_valid = 0; temp = 1; break;
+				var_valid = true; break;
 			}
 
 			if ((counterCommandInCurrentLine("save",currentCMD) == 0) && (cmdSave(currentCMD) == 0)){
-				var_valid = 0; temp = 1; break;
+				var_valid = true; break;
 			}
 
 			if ((counterCommandInCurrentLine("load",currentCMD) == 0) && (cmdLoad(currentCMD) == 0)){
-				var_valid = 0; temp = 1; break;
+				var_valid = true; break;
 			}
 
 			if ((counterCommandInCurrentLine("rules",currentCMD) == 0) && (cmdRules(currentCMD) == 0)){
-				var_valid = 0; temp = 1; break;
+				var_valid = true; break;
 			}
 
-			if (temp == 0){
+			if (!var_valid){
 
 				std::cout << "Error parsing\n";
-				var_valid = -1;
 				break;
 			}
 		}						
 	}
 
-	int InteractiveMode::valid(){
+	bool InteractiveMode::is_valid(){
 
-		return this->var_valid;
+		return var_valid;
 	}
 
 	std::string clearOfSpacesLeft(std::string currentCMD, std::string command){
@@ -101,11 +98,8 @@ using namespace life;
 
 		if (i != index)
 			return "-1";
-// std::cout << currentCMD << "\n";
-		//currentCMD.substr(index + command.length(), currentCMD.length() - index + command.length());
-		std::string a = currentCMD.substr(index + command.length());
-// std::cout << a << "\n";
-		return a;
+
+		return currentCMD.substr(index + command.length());
 	}
 
 	int InteractiveMode::cmdReset(std::string currentCMD){
@@ -228,7 +222,7 @@ using namespace life;
 			// конец SET 			
 		}	
 
-		input.close(); //правильно ли я закрываю?
+		input.close(); 
 
 		return 0;
 	}
@@ -238,7 +232,7 @@ using namespace life;
 		if (newLine[beginIndex] != ' ')
 			return -1;
 
-		int i = 0;
+		int i = beginIndex;
 		int index = newLine.length();
 
 		while ((i < index) && (newLine[i] == ' ')) i++;
@@ -246,29 +240,35 @@ using namespace life;
 		if (i == index)
 			return -1;
 
-		std::string firstArgument = "";
+		std::string Argument = "";
 
 		while ((newLine[i] != ' ') && (i < index)){
 
-			firstArgument += newLine[i];
+			Argument += newLine[i];
 			i++;
 		}
 
 		if (intORstring == "int")
 		{
 			try{
-				stoi(firstArgument);
+				stoi(Argument);
 			}catch(std::invalid_argument){
 				std::cout << "Expected argument <int>, but failed to parse.\n";
 				return -1;
+			}
+
+			if (stoi(Argument) < 0)
+			{
+				std::cout << "Expected argument <int>, but failed to parse.\n";
+				return -1;				
 			}
 		}
 
 		if (intORstring == "stringLOAD")
 		{
-			if (helpLoad(firstArgument) == -1)
+			if (helpLoad(Argument) == -1)
 				return -1;
-			else if (helpLoad(firstArgument) == 1)
+			else if (helpLoad(Argument) == 1)
 				return 0;
 		}
 
@@ -368,7 +368,7 @@ using namespace life;
 
 	int InteractiveMode::cmdLoad(std::string currentCMD){
 
-		std::string newLine = clearOfSpacesLeft(currentCMD, "save");
+		std::string newLine = clearOfSpacesLeft(currentCMD, "load");
 
 		if (newLine == "-1")
 			return -1;
