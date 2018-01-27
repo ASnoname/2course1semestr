@@ -43,21 +43,21 @@ using namespace life;
 				if (counterWords == 1)
 				{
 					std::cout << "Failed to parse command line arguments: use --help or -h to get help\n";
-					var_validAuto = -1;
+					var_valid = false;
 					break;
 				}
 		}
 
 		if (counterWords == -1){
-			std::cout << "Error parsing";
-			var_validAuto = -1;
+			std::cout << "Error parsing\n";
+			var_valid = false;
 		}
-		else var_validAuto = 0;
+		else var_valid = true;
 	}
 
-	int AutoMode::validAuto(){
+	bool AutoMode::is_valid(){
 
-		return this->var_validAuto;
+		return var_valid;
 	}
 
 	int parsingArgumentsAuto(int index, std::string currentLine){
@@ -69,7 +69,7 @@ using namespace life;
 		std::string argument;
 		while (currentLine[index] > '0' && currentLine[index] < '9'){
 
-			argument += currentLine[index]; // проверить stoi
+			argument += currentLine[index];
 			index++;
 		}
 
@@ -79,7 +79,7 @@ using namespace life;
 
 	int AutoMode::flagInput(int counterWords, char* flagsAndArguments[], int argc){
 
-		if (counterWords+2 != argc)
+		if (counterWords+1 > argc)
 		{
 			std::cout << "Expected flag <string>, but failed to parse.\n";
 			return -1;
@@ -87,7 +87,7 @@ using namespace life;
 
 		counterWords++;
 
-		std::fstream input (std::string(flagsAndArguments[counterWords]),std::ios::in);
+		std::fstream input (flagsAndArguments[counterWords],std::ios::in);
 		if (!input){
 			std::cout << "Expected flag <string>, but failed to parse.\n";
 			return -1;
@@ -179,7 +179,7 @@ using namespace life;
 	
 	int AutoMode::flagOutput(int counterWords, char* flagsAndArguments[], int argc){
 
-		if (counterWords+2 != argc)
+		if (counterWords+1 > argc)
 		{
 			std::cout << "Expected flag <string>, but failed to parse.\n";
 			return -1;
@@ -187,7 +187,7 @@ using namespace life;
 
 		counterWords++;
 
-		std::fstream output (std::string(flagsAndArguments[counterWords]),std::ios::out);
+		std::fstream output (flagsAndArguments[counterWords],std::ios::out);
 		if (!output){
 			std::cout << "Expected flag <string>, but failed to parse.\n";
 			return -1;
@@ -200,7 +200,7 @@ using namespace life;
 
 	int AutoMode::flagIterations(int counterWords, char* flagsAndArguments[], int argc){
 
-		if (counterWords+2 != argc)
+		if (counterWords+2 > argc)
 		{
 			std::cout << "Expected flag <int>, but failed to parse.\n";
 			return -1;
@@ -220,7 +220,7 @@ using namespace life;
 
 	int AutoMode::flagField(int counterWords, char* flagsAndArguments[], int argc){
 
-		if (counterWords+3 != argc)
+		if (counterWords+2 > argc)
 		{
 			std::cout << "Expected flag <int> <int>, but failed to parse.\n";
 			return -1;
@@ -306,7 +306,7 @@ using namespace life;
 
 	int AutoMode::flagM(int counterWords, char* flagsAndArguments[], int argc){
 
-		if (counterWords+2 != argc)
+		if (counterWords+1 > argc)
 		{
 			std::cout << "Expected flag <int>, but failed to parse.\n";
 			return -1;
@@ -326,7 +326,7 @@ using namespace life;
 
 	int AutoMode::flagN(int counterWords, char* flagsAndArguments[], int argc){
 
-		if (counterWords+2 != argc)
+		if (counterWords+1 > argc)
 		{
 			std::cout << "Expected flag <int>, but failed to parse.\n";
 			return -1;
@@ -346,7 +346,7 @@ using namespace life;
 
 	int AutoMode::flagK(int counterWords, char* flagsAndArguments[], int argc){
 
-		if (counterWords+2 != argc)
+		if (counterWords+1 > argc)
 		{
 			std::cout << "Expected flag <int>, but failed to parse.\n";
 			return -1;
